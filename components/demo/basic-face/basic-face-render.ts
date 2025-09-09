@@ -9,6 +9,185 @@ type BasicFaceProps = {
   color?: string;
 };
 
+// Uzay arka planı için yıldız sınıfı
+class Star {
+  x: number;
+  y: number;
+  size: number;
+  brightness: number;
+  twinkleSpeed: number;
+  color: string;
+  
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+    this.size = Math.random() * 3 + 0.5;
+    this.brightness = Math.random();
+    this.twinkleSpeed = Math.random() * 0.02 + 0.005;
+    const colors = ['#ffffff', '#ffffcc', '#ccccff', '#ffcccc', '#ccffcc'];
+    this.color = colors[Math.floor(Math.random() * colors.length)];
+  }
+  
+  update() {
+    this.brightness += this.twinkleSpeed;
+    if (this.brightness > 1 || this.brightness < 0.1) {
+      this.twinkleSpeed *= -1;
+    }
+  }
+  
+  draw(ctx: CanvasRenderingContext2D) {
+    ctx.save();
+    ctx.globalAlpha = this.brightness;
+    
+    // Yıldız glow efekti
+    const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 3);
+    gradient.addColorStop(0, this.color);
+    gradient.addColorStop(0.5, this.color + '80');
+    gradient.addColorStop(1, 'transparent');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Yıldız merkezi
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
+  }
+}
+
+// Nebula parçacığı sınıfı
+class NebulaParticle {
+  x: number;
+  y: number;
+  size: number;
+  opacity: number;
+  color: string;
+  drift: { x: number; y: number };
+  
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+    this.size = Math.random() * 80 + 20;
+    this.opacity = Math.random() * 0.3 + 0.1;
+    const colors = ['#4a0e4e', '#1a0033', '#0d1b2a', '#2d1b69', '#415a77'];
+    this.color = colors[Math.floor(Math.random() * colors.length)];
+    this.drift = {
+      x: (Math.random() - 0.5) * 0.2,
+      y: (Math.random() - 0.5) * 0.2
+    };
+  }
+  
+  update() {
+    this.x += this.drift.x;
+    this.y += this.drift.y;
+  }
+  
+  draw(ctx: CanvasRenderingContext2D) {
+    ctx.save();
+    ctx.globalAlpha = this.opacity;
+    
+    const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+    gradient.addColorStop(0, this.color + '60');
+    gradient.addColorStop(0.5, this.color + '30');
+    gradient.addColorStop(1, 'transparent');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
+  }
+}
+
+// Global yıldız ve nebula dizileri
+let stars: Star[] = [];
+let nebulaParticles: NebulaParticle[] = [];
+let lastCanvasSize = { width: 0, height: 0 };
+
+// Uzay arka planını çizen fonksiyon
+function drawSpaceBackground(ctx: CanvasRenderingContext2D) {
+  const { width, height } = ctx.canvas;
+  
+  // Canvas boyutu değiştiyse yıldızları yeniden oluştur
+  if (width !== lastCanvasSize.width || height !== lastCanvasSize.height) {
+    stars = [];
+    nebulaParticles = [];
+    
+    // Yıldızları oluştur
+    for (let i = 0; i < 150; i++) {
+      stars.push(new Star(
+        Math.random() * width,
+        Math.random() * height
+      ));
+    }
+    
+    // Nebula parçacıklarını oluştur
+    for (let i = 0; i < 8; i++) {
+      nebulaParticles.push(new NebulaParticle(
+        Math.random() * width,
+        Math.random() * height
+      ));
+    }
+    
+    lastCanvasSize = { width, height };
+  }
+  
+  // Uzay gradyanı arka plan
+  const spaceGradient = ctx.createRadialGradient(
+    width / 2, height / 2, 0,
+    width / 2, height / 2, Math.max(width, height) / 2
+  );
+  spaceGradient.addColorStop(0, '#0a0a23');
+  spaceGradient.addColorStop(0.3, '#1a1a3a');
+  spaceGradient.addColorStop(0.6, '#0d1b2a');
+  spaceGradient.addColorStop(1, '#000000');
+  
+  ctx.fillStyle = spaceGradient;
+  ctx.fillRect(0, 0, width, height);
+  
+  // Nebula parçacıklarını çiz ve güncelle
+  nebulaParticles.forEach(particle => {
+    particle.update();
+    particle.draw(ctx);
+  });
+  
+  // Yıldızları çiz ve güncelle
+  stars.forEach(star => {
+    star.update();
+    star.draw(ctx);
+  });
+  
+  // Galaktik ışık efekti
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const time = Date.now() * 0.001;
+  
+  // Dönen galaktik spiral
+  ctx.save();
+  ctx.globalAlpha = 0.1;
+  ctx.translate(centerX, centerY);
+  ctx.rotate(time * 0.1);
+  
+  for (let i = 0; i < 3; i++) {
+    const spiralGradient = ctx.createRadialGradient(0, 0, 50, 0, 0, 200);
+    spiralGradient.addColorStop(0, '#4a90e2');
+    spiralGradient.addColorStop(0.5, '#7b68ee');
+    spiralGradient.addColorStop(1, 'transparent');
+    
+    ctx.fillStyle = spiralGradient;
+    ctx.rotate((Math.PI * 2) / 3);
+    ctx.fillRect(-200, -10, 400, 20);
+  }
+  
+  ctx.restore();
+}
+
 // Hex rengini RGB'ye çeviren yardımcı fonksiyon
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -131,6 +310,9 @@ export function renderBasicFace(props: BasicFaceProps) {
 
   // Clear the canvas
   ctx.clearRect(0, 0, width, height);
+  
+  // Uzay arka planını çiz
+  drawSpaceBackground(ctx);
 
   const faceRadius = width / 2 - 20;
   const faceCenter = [width / 2, height / 2];
