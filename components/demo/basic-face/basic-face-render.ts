@@ -257,7 +257,7 @@ export function renderBasicFace(props: BasicFaceProps) {
   // Clear the canvas
   ctx.clearRect(0, 0, width, height);
 
-  const faceRadius = width / 2 - 40; // Daha fazla alan bırak
+  const faceRadius = Math.max(1, width / 2 - 40); // Ensure positive radius
   const faceCenter = [width / 2, height / 2];
   
   // Galaktik arka plan
