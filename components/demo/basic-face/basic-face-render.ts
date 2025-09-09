@@ -293,14 +293,14 @@ export function renderBasicFace(props: BasicFaceProps) {
   ctx.strokeStyle = `rgba(${Math.min(255, rgb.r + 100)}, ${Math.min(255, rgb.g + 100)}, ${Math.min(255, rgb.b + 100)}, 0.6)`;
   ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.arc(faceCenter[0], faceCenter[1], faceRadius - 1, 0, Math.PI * 2);
+  ctx.arc(faceCenter[0], faceCenter[1], Math.max(1, faceRadius - 1), 0, Math.PI * 2);
   ctx.stroke();
   
   // İç ışık halkası
   ctx.strokeStyle = `rgba(255, 255, 255, 0.3)`;
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.arc(faceCenter[0], faceCenter[1], faceRadius - 10, 0, Math.PI * 2);
+  ctx.arc(faceCenter[0], faceCenter[1], Math.max(1, faceRadius - 10), 0, Math.PI * 2);
   ctx.stroke();
 
   const eyesCenter = [width / 2, height / 2.425];
